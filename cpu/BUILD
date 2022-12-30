@@ -1,10 +1,14 @@
 load("@rules_verilator//verilator:defs.bzl", "verilator_cc_library")
 load("@gtestverilog//gtestverilog:defs.bzl", "gtest_verilog_testbench")
 
+# Integration test of CPU
+
 verilator_cc_library(
     name = "CPU",
     srcs = [
-        "source/CPU.v"
+        "source/CPU.v",
+        "source/Decoder.v",
+        "source/Registers.v"
     ]
 )
 
@@ -13,24 +17,55 @@ gtest_verilog_testbench(
     deps = [":CPU"]
 )
 
+# Test individual components of CPU
+
+verilator_cc_library(
+    name = "Decoder",
+    srcs = [
+        "source/Decoder.v"
+    ]
+)
+
+gtest_verilog_testbench(
+    name = "DecoderTestBench",
+    deps = [":Decoder"]
+)
+
+verilator_cc_library(
+    name = "Registers",
+    srcs = [
+        "source/Registers.v"
+    ]
+)
+
+gtest_verilog_testbench(
+    name = "RegistersTestBench",
+    deps = [":Registers"]
+)
+
+# CPP Test executable
+
 cc_test(
     name = "test",
     srcs = glob(
-        include =[
+        include = [
             "**/*.cpp",
             "**/*.h",
             "**/*.hpp",
             "**/*.inl"
         ],
         exclude = [
-
         ]
     ) + [
-        ":CPUTestBench"
+        ":CPUTestBench",
+        ":DecoderTestBench",
+        ":RegistersTestBench"
     ],
     deps = [
         "@com_google_googletest//:gtest",
         "@gtestverilog//gtestverilog:lib",
         ":CPU",
+        ":Decoder",
+        ":Registers"
     ],
 )

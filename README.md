@@ -42,15 +42,16 @@ An experiment in building a simple pipelined CPU in verilog
 - opcode format
   - all opcodes
     - [31 ... 24] = opcode *(8 bits)*
-        - 00000000 = LDA
-        - 00000001 = STA
-        - 00000002 = ADD: Rd = Rs1 + Rs2
-        - 00000003 = SUB: Rd = Rs1 - Rs2
-  - LDA, STA
+        - 00000000 = NOP
+        - 00000001 = LDA
+        - 00000002 = STA
+        - 00000003 = ADD: Rd = Rs1 + Rs2
+        - 00000004 = SUB: Rd = Rs1 - Rs2
+  - Type I: LDA, STA
     - [23 ... 20] = register *(4 bits)*
     - [19 ... 16] = 0000 *(4 bits)*
     - [15 ... 0] = address *(8 bits)*
-  - ADD
+  - Type R: ADD, SUB
     - [23 ... 20] = destination register *(4 bits)*
     - [19 ... 8] = 0000 0000 0000 *(12 bits)*
     - [7 ... 4] = source register 1 *(4 bits)*
