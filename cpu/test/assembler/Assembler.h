@@ -23,10 +23,13 @@ namespace assembler {
         Assembler& rs1(uint8_t rs1);
         Assembler& rs2(uint8_t rs2);
         Assembler& rd(uint8_t rd);
-        Assembler& i(uint8_t i);
+        Assembler& i(uint16_t i);
+
+        // assemble to machine code
+        uint32_t AssembleCurrentOpcode() const;
 
     private:
-        void CheckCurrentOpcode();
+        void CheckCurrentOpcode() const;
         void FinishCurrentOpcode();
         void StartOpcode(Opcode Opcode);
 

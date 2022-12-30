@@ -74,7 +74,7 @@ namespace assembler {
         return *this;
     }
 
-    Assembler& Assembler::i(uint8_t i) {
+    Assembler& Assembler::i(uint16_t i) {
         CheckCurrentOpcode();
 
         CurrentOpcode->i(i);
@@ -82,7 +82,13 @@ namespace assembler {
         return *this;
     }
 
-    void Assembler::CheckCurrentOpcode() {
+    uint32_t Assembler::AssembleCurrentOpcode() const {
+        CheckCurrentOpcode();
+
+        return CurrentOpcode->Assemble();
+    }
+
+    void Assembler::CheckCurrentOpcode() const {
         if (CurrentOpcode) {
             return;
         }
