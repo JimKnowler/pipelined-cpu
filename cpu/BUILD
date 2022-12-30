@@ -43,6 +43,18 @@ gtest_verilog_testbench(
     deps = [":Registers"]
 )
 
+verilator_cc_library(
+    name = "ALU",
+    srcs = [
+        "source/ALU.v"
+    ]
+)
+
+gtest_verilog_testbench(
+    name = "ALUTestBench",
+    deps = [":ALU"]
+)
+
 # CPP Test executable
 
 cc_test(
@@ -59,13 +71,15 @@ cc_test(
     ) + [
         ":CPUTestBench",
         ":DecoderTestBench",
-        ":RegistersTestBench"
+        ":RegistersTestBench",
+        ":ALUTestBench"
     ],
     deps = [
         "@com_google_googletest//:gtest",
         "@gtestverilog//gtestverilog:lib",
         ":CPU",
         ":Decoder",
-        ":Registers"
+        ":Registers",
+        ":ALU"
     ],
 )
