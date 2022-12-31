@@ -88,6 +88,19 @@ namespace assembler {
         return CurrentOpcode->Assemble();
     }
 
+    void Assembler::Assemble(memory::SRAM& memory) const {
+        size_t address = 0;
+        
+        for (const auto& opcode: Opcodes) {
+            memory.write(address, opcode->Assemble());
+            address += 4;
+        }
+
+        if (CurrentOpcode) {
+            memory.write(address, CurrentOpcode->Assemble());
+        }
+    }
+
     void Assembler::CheckCurrentOpcode() const {
         if (CurrentOpcode) {
             return;

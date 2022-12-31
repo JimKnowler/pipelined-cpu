@@ -5,6 +5,8 @@
 
 #include "IOpcode.h"
 
+#include "../memory/SRAM.hpp"
+
 namespace assembler {
     class Assembler {
     public:
@@ -27,6 +29,7 @@ namespace assembler {
 
         // assemble to machine code
         uint32_t AssembleCurrentOpcode() const;
+        void Assemble(memory::SRAM& memory) const;
 
     private:
         void CheckCurrentOpcode() const;
