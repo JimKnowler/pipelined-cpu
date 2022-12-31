@@ -18,18 +18,18 @@ namespace {
             testBench.setCallbackSimulateCombinatorial( [&] {
                 auto& core = testBench.core();
 
-                // instruction read
-                const size_t instructionAddress = core.o_instruction_address;
-                core.i_instruction_data = instructionMemory.read32(instructionAddress);
+                // instruction bus
+                const size_t pc = core.o_pc;
+                core.i_instruction = instructionMemory.read32(pc);
 
-                // data 
-                const size_t dataAddress = core.o_data_address;
-                if (core.o_data_rw == RW_WRITE) {
+                // data bus
+                const size_t address = core.o_address;
+                if (core.o_rw == RW_WRITE) {
                     // write
-                    dataMemory.write(dataAddress, core.o_data_data);
+                    dataMemory.write(address, core.o_data);
                 } else {
                     // read
-                    core.i_data_data = dataMemory.read32(dataAddress);
+                    core.i_data = dataMemory.read32(address);
                 }
             });
         }
@@ -62,6 +62,21 @@ TEST_F(CPU, ShouldReset) {
 
     auto& core = testBench.core();
 
-    EXPECT_EQ(0, core.o_instruction_address);
+    EXPECT_EQ(0, core.o_pc);
 }
 
+TEST_F(CPU, ShouldSequentiallyIncrementPC) {
+    HelperReset();
+
+    auto& core = testBench.core();
+
+    const int kNumTicks = 4;
+
+    // clear instruction memory so it is a sequence of NOPs
+    instructionMemory.clear();
+
+    for (int i=0; i<kNumTicks; i++) {
+        EXPECT_EQ((i*4), core.o_pc);
+        testBench.tick();
+    }
+}
