@@ -99,7 +99,11 @@ TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
         .NOP()
         .NOP()
         .NOP()
-        .STA().r(kTestReg).i(kTestAddressDst);
+        .STA().r(kTestReg).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP();
 
     assembler.Assemble(instructionMemory);
 
