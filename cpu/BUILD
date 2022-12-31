@@ -6,6 +6,7 @@ load("@gtestverilog//gtestverilog:defs.bzl", "gtest_verilog_testbench")
 verilator_cc_library(
     name = "CPU",
     srcs = [
+        "source/ALU.v",
         "source/CPU.v",
         "source/Decoder.v",
         "source/RegisterFile.v"

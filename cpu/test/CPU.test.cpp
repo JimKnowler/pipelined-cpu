@@ -82,7 +82,7 @@ TEST_F(CPU, ShouldSequentiallyIncrementPC) {
     }
 }
 
-TEST_F(CPU, ShouldLoadAndStore) {
+TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
     HelperReset();
 
     const uint8_t kTestReg = 12;
@@ -95,11 +95,15 @@ TEST_F(CPU, ShouldLoadAndStore) {
     assembler::Assembler assembler;
     assembler
         .LDA().r(kTestReg).i(kTestAddressSrc)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP()
         .STA().r(kTestReg).i(kTestAddressDst);
 
     assembler.Assemble(instructionMemory);
 
-    const int kNumTicks = 6;
+    const int kNumTicks = 10;
 
     for (int i=0; i<kNumTicks; i++) {
         testBench.tick();
