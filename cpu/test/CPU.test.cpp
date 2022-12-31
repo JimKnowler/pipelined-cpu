@@ -8,13 +8,17 @@ using namespace gtestverilog;
 using namespace cputestbench;
 
 #include "memory/SRAM.hpp"
+#include "assembler/Assembler.h"
 
 namespace {
     class CPU : public ::testing::Test {
     public:
-        CPU() : instructionMemory(16 * 1024), dataMemory(16 * 1024) {}
+        CPU() : instructionMemory(64 * 1024), dataMemory(64 * 1024) {}
 
         void SetUp() override {
+            dataMemory.clear();
+            instructionMemory.clear();
+
             testBench.setCallbackSimulateCombinatorial( [&] {
                 auto& core = testBench.core();
 
@@ -72,11 +76,34 @@ TEST_F(CPU, ShouldSequentiallyIncrementPC) {
 
     const int kNumTicks = 4;
 
-    // clear instruction memory so it is a sequence of NOPs
-    instructionMemory.clear();
-
     for (int i=0; i<kNumTicks; i++) {
         EXPECT_EQ((i*4), core.o_pc);
         testBench.tick();
     }
+}
+
+TEST_F(CPU, ShouldLoadAndStore) {
+    HelperReset();
+
+    const uint8_t kTestReg = 12;
+    const uint16_t kTestAddressSrc = 0x1234;
+    const uint16_t kTestAddressDst = 0xabcd;
+    const uint32_t kTestData = 0x12345678;
+
+    dataMemory.write(kTestAddressSrc, kTestData);
+
+    assembler::Assembler assembler;
+    assembler
+        .LDA().r(kTestReg).i(kTestAddressSrc)
+        .STA().r(kTestReg).i(kTestAddressDst);
+
+    assembler.Assemble(instructionMemory);
+
+    const int kNumTicks = 6;
+
+    for (int i=0; i<kNumTicks; i++) {
+        testBench.tick();
+    }
+
+    EXPECT_EQ(kTestData, dataMemory.read32(kTestAddressDst));
 }
