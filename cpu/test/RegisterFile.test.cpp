@@ -4,11 +4,11 @@ using namespace testing;
 #include "gtestverilog/gtestverilog.h"
 using namespace gtestverilog;
 
-#include "cpu/RegistersTestBench.h"
-using namespace registerstestbench;
+#include "cpu/RegisterFileTestBench.h"
+using namespace registerfiletestbench;
 
 namespace {
-    class Registers : public ::testing::Test {
+    class RegisterFile : public ::testing::Test {
     public:
         void SetUp() override {
             auto& core = testBench.core();
@@ -18,15 +18,15 @@ namespace {
         void TearDown() override {
         }
 
-        RegistersTestBench testBench;
+        RegisterFileTestBench testBench;
     };
 }
 
-TEST_F(Registers, ShouldConstruct) {
+TEST_F(RegisterFile, ShouldConstruct) {
 
 }
 
-TEST_F(Registers, ShouldReset) {
+TEST_F(RegisterFile, ShouldReset) {
     testBench.reset();
 
     auto& core = testBench.core();
@@ -42,7 +42,7 @@ TEST_F(Registers, ShouldReset) {
     }
 }
 
-TEST_F(Registers, ShouldWriteToSingleRegister) {
+TEST_F(RegisterFile, ShouldWriteToSingleRegister) {
     auto& core = testBench.core();
 
     const uint32_t TestValue = 0x12345678;
@@ -71,7 +71,7 @@ TEST_F(Registers, ShouldWriteToSingleRegister) {
     }
 }
 
-TEST_F(Registers, ShouldWriteToAllRegisters) {
+TEST_F(RegisterFile, ShouldWriteToAllRegisterFile) {
     auto& core = testBench.core();
 
     core.i_we = 1;
@@ -96,7 +96,7 @@ TEST_F(Registers, ShouldWriteToAllRegisters) {
 }
 
 
-TEST_F(Registers, ShouldReadConcurrentlyFromDifferentRegisters) {
+TEST_F(RegisterFile, ShouldReadConcurrentlyFromDifferentRegisterFile) {
     auto& core = testBench.core();
 
     core.i_we = 1;

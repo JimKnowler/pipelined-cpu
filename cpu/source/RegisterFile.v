@@ -1,16 +1,16 @@
-module Registers(
+module RegisterFile(
     input i_clk,
     input i_reset_n,
 
-    input i_we,
-    input [3:0] i_ws,
-    input [31:0] i_wd,
+    input i_we,                     // write enable
+    input [3:0] i_ws,               // write register selector
+    input [31:0] i_wd,              // write data
 
-    input [3:0] i_rs1,
-    input [3:0] i_rs2,
+    input [3:0] i_rs1,              // read register selector (1) 
+    input [3:0] i_rs2,              // read register selector (2)
 
-    output [31:0] o_rd1,
-    output [31:0] o_rd2
+    output [31:0] o_rd1,            // read data (1)
+    output [31:0] o_rd2             // read data (2)
 );
 
 reg [31:0] r_registers [15:0];

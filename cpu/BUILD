@@ -8,7 +8,7 @@ verilator_cc_library(
     srcs = [
         "source/CPU.v",
         "source/Decoder.v",
-        "source/Registers.v"
+        "source/RegisterFile.v"
     ]
 )
 
@@ -32,15 +32,15 @@ gtest_verilog_testbench(
 )
 
 verilator_cc_library(
-    name = "Registers",
+    name = "RegisterFile",
     srcs = [
-        "source/Registers.v"
+        "source/RegisterFile.v"
     ]
 )
 
 gtest_verilog_testbench(
-    name = "RegistersTestBench",
-    deps = [":Registers"]
+    name = "RegisterFileTestBench",
+    deps = [":RegisterFile"]
 )
 
 verilator_cc_library(
@@ -71,7 +71,7 @@ cc_test(
     ) + [
         ":CPUTestBench",
         ":DecoderTestBench",
-        ":RegistersTestBench",
+        ":RegisterFileTestBench",
         ":ALUTestBench"
     ],
     deps = [
@@ -79,7 +79,7 @@ cc_test(
         "@gtestverilog//gtestverilog:lib",
         ":CPU",
         ":Decoder",
-        ":Registers",
+        ":RegisterFile",
         ":ALU"
     ],
 )
