@@ -115,3 +115,95 @@ TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
 
     EXPECT_EQ(kTestData, dataMemory.read32(kTestAddressDst));
 }
+
+TEST_F(CPU, ShouldAddWithoutHazards) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2= 7;
+    const uint16_t kTestAddressSrc2 = 0x4321;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint8_t kTestRegDst = 11; 
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+
+    assembler::Assembler assembler;
+    assembler
+        .LDA().r(kTestReg1).i(kTestAddressSrc1)
+        .LDA().r(kTestReg2).i(kTestAddressSrc2)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP()
+        .ADD().rd(kTestRegDst).rs1(kTestReg1).rs2(kTestReg2)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP()
+        .STA().r(kTestRegDst).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    const int kNumTicks = 16;
+
+    for (int i=0; i<kNumTicks; i++) {
+        testBench.tick();
+    }
+
+    EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
+}
+
+TEST_F(CPU, ShouldSubWithoutHazards) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2= 7;
+    const uint16_t kTestAddressSrc2 = 0x4321;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint8_t kTestRegDst = 11; 
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+
+    assembler::Assembler assembler;
+    assembler
+        .LDA().r(kTestReg1).i(kTestAddressSrc1)
+        .LDA().r(kTestReg2).i(kTestAddressSrc2)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP()
+        .SUB().rd(kTestRegDst).rs1(kTestReg1).rs2(kTestReg2)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP()
+        .STA().r(kTestRegDst).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    const int kNumTicks = 16;
+
+    for (int i=0; i<kNumTicks; i++) {
+        testBench.tick();
+    }
+
+    EXPECT_EQ(kTestData1 - kTestData2, dataMemory.read32(kTestAddressDst));
+}

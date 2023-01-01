@@ -125,6 +125,7 @@ ALU alu(
     .o_result(w_alu_result)
 );
 
+// TODO: define once and share between CPU.v and ALU.v
 localparam [3:0] OP_PASSTHROUGH = 0;
 localparam [3:0] OP_ADD = 1;
 localparam [3:0] OP_SUB = 2;
