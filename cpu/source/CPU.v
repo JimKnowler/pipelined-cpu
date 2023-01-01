@@ -1,7 +1,24 @@
 module CPU(
     input i_clk,
     input i_reset_n,
-    
+
+    // debugging - stage 1
+    output [31:0] o_debug_ir,
+
+    // debugging - stage 2
+    output [3:0] o_debug_decoder_rs1,
+    output [3:0] o_debug_decoder_rs2,
+    output [3:0] o_debug_decoder_rd,
+    output o_debug_writeback_we,
+    output [3:0] o_debug_writeback_ws,
+    output [31:0] o_debug_writeback_wd,
+    output [31:0] o_debug_registerfile_rd1,
+    output [31:0] o_debug_registerfile_rd2,
+
+    // debugging - stage 3
+    output [3:0] o_debug_alu_op,
+    output [31:0] o_debug_alu_result,
+
     // instruction bus
     output [15:0] o_pc,
     input [31:0] i_instruction,
@@ -204,8 +221,26 @@ end
 
 // ----------------------------------------------------------
 // Module outputs
+
 assign o_address = r_address;
 assign o_data = r_data;
 assign o_rw = r_rw;
+
+// ----------------------------------------------------------
+// Debug outputs
+
+assign o_debug_ir = r_ir;
+
+assign o_debug_decoder_rs1 = w_decoder_rs1;
+assign o_debug_decoder_rs2 = w_decoder_rs2;
+assign o_debug_decoder_rd = w_decoder_rd;
+assign o_debug_writeback_we = w_writeback_we;
+assign o_debug_writeback_ws = w_writeback_ws;
+assign o_debug_writeback_wd = w_writeback_wd;
+assign o_debug_registerfile_rd1 = w_registerfile_rd1;
+assign o_debug_registerfile_rd2 = w_registerfile_rd2;
+
+assign o_debug_alu_op = r_alu_op;
+assign o_debug_alu_result = w_alu_result;
 
 endmodule
