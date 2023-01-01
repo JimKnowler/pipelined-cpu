@@ -9,7 +9,8 @@ verilator_cc_library(
         "source/ALU.v",
         "source/CPU.v",
         "source/Decoder.v",
-        "source/RegisterFile.v"
+        "source/RegisterFile.v",
+        "source/StallControl.v"
     ]
 )
 

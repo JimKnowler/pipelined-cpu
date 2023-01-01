@@ -83,7 +83,7 @@ TEST_F(CPU, ShouldSequentiallyIncrementPC) {
     }
 }
 
-TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
+TEST_F(CPU, ShouldLoadAndStoreWithoutPipelineHazards) {
     HelperReset();
 
     const uint8_t kTestReg = 12;
@@ -113,7 +113,7 @@ TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
     EXPECT_EQ(kTestData, dataMemory.read32(kTestAddressDst));
 }
 
-TEST_F(CPU, ShouldAddWithoutHazards) {
+TEST_F(CPU, ShouldAddWithoutPipelineHazards) {
     HelperReset();
 
     const uint8_t kTestReg1 = 5;
@@ -156,7 +156,7 @@ TEST_F(CPU, ShouldAddWithoutHazards) {
     EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
 }
 
-TEST_F(CPU, ShouldSubWithoutHazards) {
+TEST_F(CPU, ShouldSubWithoutPipelineHazards) {
     HelperReset();
 
     const uint8_t kTestReg1 = 5;
@@ -198,3 +198,42 @@ TEST_F(CPU, ShouldSubWithoutHazards) {
 
     EXPECT_EQ(kTestData1 - kTestData2, dataMemory.read32(kTestAddressDst));
 }
+
+TEST_F(CPU, ShouldAddWithPipelineRegisterHazards) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2= 7;
+    const uint16_t kTestAddressSrc2 = 0x4321;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint8_t kTestRegDst = 11; 
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
+
+    assembler::Assembler assembler;
+    assembler
+        .LDA().r(kTestReg1).i(kTestAddressSrc1)
+        .LDA().r(kTestReg2).i(kTestAddressSrc2)
+        .ADD().rd(kTestRegDst).rs1(kTestReg1).rs2(kTestReg2)
+        .STA().r(kTestRegDst).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(16);
+
+    std::cout << testBench.trace;
+
+    EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
+}
+
+// data hazard - write and read from the same area of memory

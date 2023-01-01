@@ -2,6 +2,9 @@ module CPU(
     input i_clk,
     input i_reset_n,
 
+    // debugging - pipeline
+    output o_debug_stall,
+
     // debugging - stage 1
     output [31:0] o_debug_ir,
 
@@ -46,6 +49,30 @@ localparam [7:0] //NOP = 0,
                  SUB = 4;
 
 // ----------------------------------------------------------
+// Pipeline registers
+
+wire w_stall;
+
+reg [7:0] r_execute_opcode;
+reg [3:0] r_execute_ws;
+reg r_execute_we;
+reg [31:0] r_execute_rd1;
+reg [31:0] r_execute_rd2;
+reg [15:0] r_execute_immediate;
+
+reg [7:0] r_memory_opcode;
+reg [3:0] r_memory_ws;
+reg r_memory_we;
+reg [15:0] r_memory_immediate;
+reg [31:0] r_memory_alu_result;
+
+reg [7:0] r_writeback_opcode;
+reg [3:0] r_writeback_ws;
+reg r_writeback_we;
+reg [31:0] r_writeback_alu_result;
+reg [31:0] r_writeback_data;
+
+// ----------------------------------------------------------
 // STAGE 1 - Fetch
 
 reg [15:0] r_pc;            // Program counter
@@ -55,7 +82,7 @@ always @(posedge i_clk or negedge i_reset_n)
 begin
     if (!i_reset_n)
         r_pc <= 0;
-    else begin
+    else if (!w_stall) begin
         r_pc <= r_pc + 4;
         r_ir <= i_instruction;
     end
@@ -108,21 +135,45 @@ RegisterFile registerFile(
     .o_rd2(w_registerfile_rd2)
 );
 
-reg [7:0] r_execute_opcode;
-reg [3:0] r_execute_ws;
-reg r_execute_we;
-reg [31:0] r_execute_rd1;
-reg [31:0] r_execute_rd2;
-reg [15:0] r_execute_immediate;
+StallControl stallControl(
+    .i_clk(i_clk),
+    .i_reset_n(i_reset_n),
+
+    .i_decoder_rs1(w_decoder_rs1),
+    .i_decoder_rs2(w_decoder_rs2),
+
+    .i_execute_ws(r_execute_ws),
+    .i_execute_we(r_execute_we),
+
+    .i_memory_ws(r_memory_ws),
+    .i_memory_we(r_memory_we),
+
+    .i_writeback_ws(r_writeback_ws),
+    .i_writeback_we(r_writeback_we),
+
+    .o_stall(w_stall)
+);
 
 always @(posedge i_clk)
 begin
-    r_execute_opcode <= w_decoder_opcode;
-    r_execute_ws <= w_decoder_ws;
-    r_execute_we <= w_decoder_we;
-    r_execute_rd1 <= w_registerfile_rd1;
-    r_execute_rd2 <= w_registerfile_rd2;
-    r_execute_immediate <= w_decoder_immediate;
+    if (!w_stall) 
+    begin
+        r_execute_opcode <= w_decoder_opcode;
+        r_execute_ws <= w_decoder_ws;
+        r_execute_we <= w_decoder_we;
+        r_execute_rd1 <= w_registerfile_rd1;
+        r_execute_rd2 <= w_registerfile_rd2;
+        r_execute_immediate <= w_decoder_immediate;
+    end
+    else
+    begin
+        r_execute_opcode <= 0;
+        r_execute_ws <= 0;
+        r_execute_we <= 0;
+        r_execute_rd1 <= 0;
+        r_execute_rd2 <= 0;
+        r_execute_immediate <= 0;
+    end
 end
 
 // ----------------------------------------------------------
@@ -160,12 +211,6 @@ begin
     r_alu_d2 = r_execute_rd2;
 end
 
-reg [7:0] r_memory_opcode;
-reg [3:0] r_memory_ws;
-reg r_memory_we;
-reg [15:0] r_memory_immediate;
-reg [31:0] r_memory_alu_result;
-
 always @(posedge i_clk)
 begin
     r_memory_opcode <= r_execute_opcode;
@@ -197,12 +242,6 @@ begin
 
     r_address = r_memory_immediate;
 end
-
-reg [7:0] r_writeback_opcode;
-reg [3:0] r_writeback_ws;
-reg r_writeback_we;
-reg [31:0] r_writeback_alu_result;
-reg [31:0] r_writeback_data;
 
 always @(posedge i_clk)
 begin
@@ -240,6 +279,7 @@ assign o_rw = r_rw;
 // ----------------------------------------------------------
 // Debug outputs
 
+assign o_debug_stall = w_stall;
 assign o_debug_ir = r_ir;
 
 assign o_debug_decoder_rs1 = w_decoder_rs1;
