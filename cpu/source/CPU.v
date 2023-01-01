@@ -1,6 +1,4 @@
 module CPU(
-    /* verilator lint_off UNUSED */
-    /* verilator lint_off UNDRIVEN */
     input i_clk,
     input i_reset_n,
     
@@ -13,9 +11,6 @@ module CPU(
     output o_rw,
     output [31:0] o_data,
     input [31:0] i_data
-
-    /* verilator lint_on UNUSED */
-    /* verilator lint_on UNDRIVEN */
 );
 
 localparam RW_READ = 0;
@@ -29,27 +24,10 @@ localparam [7:0] //NOP = 0,
                  SUB = 4;
 
 // ----------------------------------------------------------
-// Components
+// STAGE 1 - Fetch
 
 reg [15:0] r_pc;            // Program counter
 reg [31:0] r_ir;            // Instruction Register
-
-wire [7:0] w_decoder_opcode;
-wire [3:0] w_decoder_rs1;
-wire [3:0] w_decoder_rs2;
-wire [3:0] w_decoder_rd;
-wire [15:0] w_decoder_immediate;
-
-reg w_writeback_we;             // write enable
-reg [3:0] w_writeback_ws;       // write register select
-reg [31:0] w_writeback_wd;      // write data
-
-wire [31:0] w_registerfile_rd1;
-wire [31:0] w_registerfile_rd2;
-
-
-// ----------------------------------------------------------
-// STAGE 1 - Fetch
 
 always @(posedge i_clk or negedge i_reset_n)
 begin
@@ -65,6 +43,19 @@ assign o_pc = r_pc;
 
 // ----------------------------------------------------------
 // STAGE 2 - Decode
+
+wire [7:0] w_decoder_opcode;
+wire [3:0] w_decoder_rs1;
+wire [3:0] w_decoder_rs2;
+wire [3:0] w_decoder_rd;
+wire [15:0] w_decoder_immediate;
+
+reg w_writeback_we;             // write enable
+reg [3:0] w_writeback_ws;       // write register select
+reg [31:0] w_writeback_wd;      // write data
+
+wire [31:0] w_registerfile_rd1;
+wire [31:0] w_registerfile_rd2;
 
 Decoder decoder(
     .i_clk(i_clk),
