@@ -43,6 +43,7 @@ namespace {
 
         void HelperReset() {
             testBench.reset();
+            testBench.trace.clear();
         }
 
         CPUTestBench testBench;
@@ -107,11 +108,7 @@ TEST_F(CPU, ShouldLoadAndStoreWithoutHazards) {
 
     assembler.Assemble(instructionMemory);
 
-    const int kNumTicks = 10;
-
-    for (int i=0; i<kNumTicks; i++) {
-        testBench.tick();
-    }
+    testBench.tick(10);
 
     EXPECT_EQ(kTestData, dataMemory.read32(kTestAddressDst));
 }
@@ -131,6 +128,7 @@ TEST_F(CPU, ShouldAddWithoutHazards) {
     const uint16_t kTestAddressDst = 0xabcd;
 
     dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
 
     assembler::Assembler assembler;
     assembler
@@ -153,11 +151,7 @@ TEST_F(CPU, ShouldAddWithoutHazards) {
 
     assembler.Assemble(instructionMemory);
 
-    const int kNumTicks = 16;
-
-    for (int i=0; i<kNumTicks; i++) {
-        testBench.tick();
-    }
+    testBench.tick(16);
 
     EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
 }
@@ -177,6 +171,7 @@ TEST_F(CPU, ShouldSubWithoutHazards) {
     const uint16_t kTestAddressDst = 0xabcd;
 
     dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
 
     assembler::Assembler assembler;
     assembler
@@ -199,11 +194,7 @@ TEST_F(CPU, ShouldSubWithoutHazards) {
 
     assembler.Assemble(instructionMemory);
 
-    const int kNumTicks = 16;
-
-    for (int i=0; i<kNumTicks; i++) {
-        testBench.tick();
-    }
+    testBench.tick(16);
 
     EXPECT_EQ(kTestData1 - kTestData2, dataMemory.read32(kTestAddressDst));
 }
