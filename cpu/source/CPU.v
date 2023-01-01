@@ -14,10 +14,15 @@ module CPU(
     output [31:0] o_debug_writeback_wd,
     output [31:0] o_debug_registerfile_rd1,
     output [31:0] o_debug_registerfile_rd2,
+    output [7:0] o_debug_execute_opcode,
 
     // debugging - stage 3
     output [3:0] o_debug_alu_op,
     output [31:0] o_debug_alu_result,
+    output [7:0] o_debug_memory_opcode,
+
+    // debugging - stage 4
+    output [7:0] o_debug_writeback_opcode,
 
     // instruction bus
     output [15:0] o_pc,
@@ -64,12 +69,13 @@ assign o_pc = r_pc;
 wire [7:0] w_decoder_opcode;
 wire [3:0] w_decoder_rs1;
 wire [3:0] w_decoder_rs2;
-wire [3:0] w_decoder_rd;
+wire [3:0] w_decoder_ws;
+wire w_decoder_we;
 wire [15:0] w_decoder_immediate;
 
-reg w_writeback_we;             // write enable
-reg [3:0] w_writeback_ws;       // write register select
-reg [31:0] w_writeback_wd;      // write data
+reg w_registerfile_we;             // write enable
+reg [3:0] w_registerfile_ws;       // write register select
+reg [31:0] w_registerfile_wd;      // write data
 
 wire [31:0] w_registerfile_rd1;
 wire [31:0] w_registerfile_rd2;
@@ -82,7 +88,8 @@ Decoder decoder(
     .o_opcode(w_decoder_opcode),
     .o_rs1(w_decoder_rs1),
     .o_rs2(w_decoder_rs2),
-    .o_rd(w_decoder_rd),
+    .o_ws(w_decoder_ws),
+    .o_we(w_decoder_we),
     .o_i(w_decoder_immediate)
 );
 
@@ -90,9 +97,9 @@ RegisterFile registerFile(
     .i_clk(i_clk),
     .i_reset_n(i_reset_n),
 
-    .i_we(w_writeback_we),
-    .i_ws(w_writeback_ws),
-    .i_wd(w_writeback_wd),
+    .i_we(w_registerfile_we),
+    .i_ws(w_registerfile_ws),
+    .i_wd(w_registerfile_wd),
 
     .i_rs1(w_decoder_rs1),
     .i_rs2(w_decoder_rs2),
@@ -101,19 +108,21 @@ RegisterFile registerFile(
     .o_rd2(w_registerfile_rd2)
 );
 
-reg [7:0] r_stage2_opcode;
-reg [3:0] r_stage2_rd;
-reg [31:0] r_stage2_rd1;
-reg [31:0] r_stage2_rd2;
-reg [15:0] r_stage2_immediate;
+reg [7:0] r_execute_opcode;
+reg [3:0] r_execute_ws;
+reg r_execute_we;
+reg [31:0] r_execute_rd1;
+reg [31:0] r_execute_rd2;
+reg [15:0] r_execute_immediate;
 
 always @(posedge i_clk)
 begin
-    r_stage2_opcode <= w_decoder_opcode;
-    r_stage2_rd <= w_decoder_rd;
-    r_stage2_rd1 <= w_registerfile_rd1;
-    r_stage2_rd2 <= w_registerfile_rd2;
-    r_stage2_immediate <= w_decoder_immediate;
+    r_execute_opcode <= w_decoder_opcode;
+    r_execute_ws <= w_decoder_ws;
+    r_execute_we <= w_decoder_we;
+    r_execute_rd1 <= w_registerfile_rd1;
+    r_execute_rd2 <= w_registerfile_rd2;
+    r_execute_immediate <= w_decoder_immediate;
 end
 
 // ----------------------------------------------------------
@@ -140,36 +149,34 @@ localparam [3:0] OP_SUB = 2;
 
 always @(*)
 begin
-    case (r_stage2_opcode)
+    // TODO: move ALU op decode to the decoder and pass along pipeline
+    case (r_execute_opcode)
         ADD: r_alu_op = OP_ADD;
         SUB: r_alu_op = OP_SUB;
         default: r_alu_op = OP_PASSTHROUGH;
     endcase
 
-    r_alu_d1 = r_stage2_rd1;
-    r_alu_d2 = r_stage2_rd2;
+    r_alu_d1 = r_execute_rd1;
+    r_alu_d2 = r_execute_rd2;
 end
 
-reg [7:0] r_stage3_opcode;
-reg [3:0] r_stage3_rd;
-reg [15:0] r_stage3_immediate;
-reg [31:0] r_stage3_alu_result;
+reg [7:0] r_memory_opcode;
+reg [3:0] r_memory_ws;
+reg r_memory_we;
+reg [15:0] r_memory_immediate;
+reg [31:0] r_memory_alu_result;
 
 always @(posedge i_clk)
 begin
-    r_stage3_opcode <= r_stage2_opcode;
-    r_stage3_rd <= r_stage2_rd;
-    r_stage3_immediate <= r_stage2_immediate;
-    r_stage3_alu_result <= w_alu_result;
+    r_memory_opcode <= r_execute_opcode;
+    r_memory_ws <= r_execute_ws;
+    r_memory_we <= r_execute_we;
+    r_memory_immediate <= r_execute_immediate;
+    r_memory_alu_result <= w_alu_result;
 end
 
 // ----------------------------------------------------------
 // STAGE 4 - Data Memory
-
-reg [7:0] r_stage4_opcode;
-reg [3:0] r_stage4_rd;
-reg [31:0] r_stage4_alu_result;
-reg [31:0] r_stage4_data;
 
 reg r_rw;
 reg [31:0] r_data;
@@ -177,10 +184,10 @@ reg [15:0] r_address;
 
 always @(*)
 begin
-    case (r_stage3_opcode)
+    case (r_memory_opcode)
         STA: begin
             r_rw = RW_WRITE;
-            r_data = r_stage3_alu_result;
+            r_data = r_memory_alu_result;
         end
         default: begin
             r_rw = RW_READ;
@@ -188,15 +195,22 @@ begin
         end
     endcase
 
-    r_address = r_stage3_immediate;
+    r_address = r_memory_immediate;
 end
+
+reg [7:0] r_writeback_opcode;
+reg [3:0] r_writeback_ws;
+reg r_writeback_we;
+reg [31:0] r_writeback_alu_result;
+reg [31:0] r_writeback_data;
 
 always @(posedge i_clk)
 begin
-    r_stage4_opcode <= r_stage3_opcode;
-    r_stage4_rd <= r_stage3_rd;
-    r_stage4_alu_result <= r_stage3_alu_result;
-    r_stage4_data <= i_data;
+    r_writeback_opcode <= r_memory_opcode;
+    r_writeback_ws <= r_memory_ws;
+    r_writeback_we <= r_memory_we;
+    r_writeback_alu_result <= r_memory_alu_result;
+    r_writeback_data <= i_data;
 end
 
 // ----------------------------------------------------------
@@ -204,17 +218,14 @@ end
 
 always @(*)
 begin
-    case (r_stage4_opcode)
-        ADD, SUB, LDA: w_writeback_we = 1;
-        default: w_writeback_we = 0;
-    endcase
+    w_registerfile_we = r_writeback_we;
+    w_registerfile_ws = r_writeback_ws;
 
-    w_writeback_ws = r_stage4_rd;
-
-    case (r_stage4_opcode)
-        ADD, SUB: w_writeback_wd = r_stage4_alu_result;
-        LDA: w_writeback_wd = r_stage4_data;
-        default: w_writeback_wd = 0;
+    // TODO: move writeback selection to decoder and pass along pipeline
+    case (r_writeback_opcode)
+        ADD, SUB: w_registerfile_wd = r_writeback_alu_result;
+        LDA: w_registerfile_wd = r_writeback_data;
+        default: w_registerfile_wd = 0;
     endcase
     
 end
@@ -233,14 +244,18 @@ assign o_debug_ir = r_ir;
 
 assign o_debug_decoder_rs1 = w_decoder_rs1;
 assign o_debug_decoder_rs2 = w_decoder_rs2;
-assign o_debug_decoder_rd = w_decoder_rd;
-assign o_debug_writeback_we = w_writeback_we;
-assign o_debug_writeback_ws = w_writeback_ws;
-assign o_debug_writeback_wd = w_writeback_wd;
+assign o_debug_decoder_rd = w_decoder_ws;
+assign o_debug_writeback_we = w_registerfile_we;
+assign o_debug_writeback_ws = w_registerfile_ws;
+assign o_debug_writeback_wd = w_registerfile_wd;
 assign o_debug_registerfile_rd1 = w_registerfile_rd1;
 assign o_debug_registerfile_rd2 = w_registerfile_rd2;
+assign o_debug_execute_opcode = r_execute_opcode;
 
 assign o_debug_alu_op = r_alu_op;
 assign o_debug_alu_result = w_alu_result;
+assign o_debug_memory_opcode = r_memory_opcode;
+
+assign o_debug_writeback_opcode = r_writeback_opcode;
 
 endmodule

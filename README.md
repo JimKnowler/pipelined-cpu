@@ -30,6 +30,7 @@ An experiment in building a simple pipelined CPU in verilog
   - write to register file
 
 - Separate memory bus for instructions and data
+  - benefit: removes structural hazard for memory access
   - 16bit data addresses
   - 16bit instruction addresses
 

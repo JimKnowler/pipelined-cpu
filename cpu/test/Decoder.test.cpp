@@ -44,7 +44,8 @@ TEST_F(Decoder, ShouldDecodeNOP) {
     EXPECT_EQ(static_cast<uint8_t>(Opcode::NOP), core.o_opcode);
     EXPECT_EQ(0, core.o_rs1);
     EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(0, core.o_rd);
+    EXPECT_EQ(0, core.o_ws);
+    EXPECT_EQ(0, core.o_we);
     EXPECT_EQ(0, core.o_i);
 }
 
@@ -60,7 +61,8 @@ TEST_F(Decoder, ShouldDecodeLDA) {
     EXPECT_EQ(static_cast<uint8_t>(Opcode::LDA), core.o_opcode);
     EXPECT_EQ(0, core.o_rs1);
     EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(TestRegister, core.o_rd);
+    EXPECT_EQ(TestRegister, core.o_ws);
+    EXPECT_EQ(1, core.o_we);
     EXPECT_EQ(TestAddress, core.o_i);
 }
 
@@ -76,15 +78,16 @@ TEST_F(Decoder, ShouldDecodeSTA) {
     EXPECT_EQ(static_cast<uint8_t>(Opcode::STA), core.o_opcode);
     EXPECT_EQ(TestRegister, core.o_rs1);
     EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(0, core.o_rd);
+    EXPECT_EQ(0, core.o_ws);
+    EXPECT_EQ(0, core.o_we);
     EXPECT_EQ(TestAddress, core.o_i);
 }
 
 TEST_F(Decoder, ShouldDecodeADD) {
     const uint8_t TestRs1 = 8;
     const uint8_t TestRs2 = 7;
-    const uint8_t TestRd = 6;
-    const uint32_t ADD = Assembler().ADD().rs1(TestRs1).rs2(TestRs2).rd(TestRd).AssembleCurrentOpcode();
+    const uint8_t TestWs = 6;
+    const uint32_t ADD = Assembler().ADD().rs1(TestRs1).rs2(TestRs2).rd(TestWs).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
     core.i_ir = ADD;
@@ -93,15 +96,16 @@ TEST_F(Decoder, ShouldDecodeADD) {
     EXPECT_EQ(static_cast<uint8_t>(Opcode::ADD), core.o_opcode);
     EXPECT_EQ(TestRs1, core.o_rs1);
     EXPECT_EQ(TestRs2, core.o_rs2);
-    EXPECT_EQ(TestRd, core.o_rd);
+    EXPECT_EQ(TestWs, core.o_ws);
+    EXPECT_EQ(1, core.o_we);
     EXPECT_EQ(0, core.o_i);
 }
 
 TEST_F(Decoder, ShouldDecodeSUB) {
     const uint8_t TestRs1 = 15;
     const uint8_t TestRs2 = 14;
-    const uint8_t TestRd = 13;
-    const uint32_t SUB = Assembler().SUB().rs1(TestRs1).rs2(TestRs2).rd(TestRd).AssembleCurrentOpcode();
+    const uint8_t TestWs = 13;
+    const uint32_t SUB = Assembler().SUB().rs1(TestRs1).rs2(TestRs2).rd(TestWs).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
     core.i_ir = SUB;
@@ -110,6 +114,7 @@ TEST_F(Decoder, ShouldDecodeSUB) {
     EXPECT_EQ(static_cast<uint8_t>(Opcode::SUB), core.o_opcode);
     EXPECT_EQ(TestRs1, core.o_rs1);
     EXPECT_EQ(TestRs2, core.o_rs2);
-    EXPECT_EQ(TestRd, core.o_rd);
+    EXPECT_EQ(TestWs, core.o_ws);
+    EXPECT_EQ(1, core.o_we);
     EXPECT_EQ(0, core.o_i);
 }
