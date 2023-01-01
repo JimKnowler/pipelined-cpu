@@ -56,6 +56,19 @@ gtest_verilog_testbench(
     deps = [":ALU"]
 )
 
+verilator_cc_library(
+    name = "StallControl",
+    srcs = [
+        "source/StallControl.v"
+    ]
+)
+
+gtest_verilog_testbench(
+    name = "StallControlTestBench",
+    deps = [":StallControl"]
+)
+
+
 # CPP Test executable
 
 cc_test(
@@ -73,7 +86,8 @@ cc_test(
         ":CPUTestBench",
         ":DecoderTestBench",
         ":RegisterFileTestBench",
-        ":ALUTestBench"
+        ":ALUTestBench",
+        ":StallControlTestBench"
     ],
     deps = [
         "@com_google_googletest//:gtest",
@@ -81,6 +95,7 @@ cc_test(
         ":CPU",
         ":Decoder",
         ":RegisterFile",
-        ":ALU"
+        ":ALU",
+        ":StallControl"
     ],
 )
