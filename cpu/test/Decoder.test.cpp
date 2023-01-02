@@ -54,13 +54,13 @@ TEST_F(Decoder, ShouldDecodeNOP) {
 TEST_F(Decoder, ShouldDecodeLDA) {
     const uint8_t TestRegister = 12;
     const uint16_t TestAddress = 0xabcd;
-    const uint32_t LDA = Assembler().LDA().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
+    const uint32_t LW= Assembler().LW().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
-    core.i_ir = LDA;
+    core.i_ir = LW;
     core.eval();
 
-    EXPECT_EQ(static_cast<uint8_t>(Opcode::LDA), core.o_opcode);
+    EXPECT_EQ(static_cast<uint8_t>(Opcode::LW), core.o_opcode);
     EXPECT_EQ(0, core.o_re1);
     EXPECT_EQ(0, core.o_rs1);
     EXPECT_EQ(0, core.o_re1);
@@ -73,13 +73,13 @@ TEST_F(Decoder, ShouldDecodeLDA) {
 TEST_F(Decoder, ShouldDecodeSTA) {
     const uint8_t TestRegister = 14;
     const uint16_t TestAddress = 0xcdef;
-    const uint32_t LDA = Assembler().STA().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
+    const uint32_t SW = Assembler().SW().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
-    core.i_ir = LDA;
+    core.i_ir = SW;
     core.eval();
 
-    EXPECT_EQ(static_cast<uint8_t>(Opcode::STA), core.o_opcode);
+    EXPECT_EQ(static_cast<uint8_t>(Opcode::SW), core.o_opcode);
     EXPECT_EQ(1, core.o_re1);
     EXPECT_EQ(TestRegister, core.o_rs1);
     EXPECT_EQ(0, core.o_re2);

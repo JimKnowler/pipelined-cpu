@@ -19,8 +19,8 @@ module Decoder(
 );
 
 localparam [7:0] //NOP = 0,
-                 LDA = 1,
-                 STA = 2,
+                 LW = 1,
+                 SW = 2,
                  ADD = 3,
                  SUB = 4;
 
@@ -46,11 +46,11 @@ begin
     r_opcode = i_ir[31:24];
 
     case (r_opcode)
-        LDA: begin
+        LW: begin
             r_ws = i_ir[23:20];
             r_i = i_ir[15:0];
         end
-        STA: begin
+        SW: begin
             r_re1 = 1;
             r_rs1 = i_ir[23:20];
             r_i = i_ir[15:0];
@@ -67,7 +67,7 @@ begin
     endcase
 
     case (r_opcode)
-        ADD, SUB, LDA: r_we = 1;
+        ADD, SUB, LW: r_we = 1;
         default: begin
         end
     endcase

@@ -18,14 +18,14 @@ namespace assembler {
         return *this;
     }
 
-    Assembler& Assembler::LDA() {
-        StartOpcode(Opcode::LDA);
+    Assembler& Assembler::LW() {
+        StartOpcode(Opcode::LW);
 
         return *this;
     }
 
-    Assembler& Assembler::STA() {
-        StartOpcode(Opcode::STA);
+    Assembler& Assembler::SW() {
+        StartOpcode(Opcode::SW);
 
         return *this;
     }
@@ -120,8 +120,8 @@ namespace assembler {
 
         switch (Opcode) {
             case Opcode::NOP:
-            case Opcode::LDA:
-            case Opcode::STA:
+            case Opcode::LW:
+            case Opcode::SW:
             {
                 auto NewOpcode = std::make_unique<opcode::OpcodeTypeI>(Opcode);
                 CurrentOpcode = std::move(NewOpcode);

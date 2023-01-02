@@ -15,8 +15,8 @@ namespace assembler {
 
         // opcodes
         Assembler& NOP();
-        Assembler& LDA();
-        Assembler& STA();
+        Assembler& LW();
+        Assembler& SW();
         Assembler& ADD();
         Assembler& SUB();
 

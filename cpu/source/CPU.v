@@ -43,8 +43,8 @@ localparam RW_WRITE = 1;
 
 // TODO: define in one file and import into Decoder.v and CPU.v
 localparam [7:0] //NOP = 0,
-                 LDA = 1,
-                 STA = 2,
+                 LW = 1,
+                 SW = 2,
                  ADD = 3,
                  SUB = 4;
 
@@ -236,7 +236,7 @@ reg [15:0] r_address;
 always @(*)
 begin
     case (r_memory_opcode)
-        STA: begin
+        SW: begin
             r_rw = RW_WRITE;
             r_data = r_memory_alu_result;
         end
@@ -269,7 +269,7 @@ begin
     // TODO: move writeback selection to decoder and pass along pipeline
     case (r_writeback_opcode)
         ADD, SUB: w_registerfile_wd = r_writeback_alu_result;
-        LDA: w_registerfile_wd = r_writeback_data;
+        LW: w_registerfile_wd = r_writeback_data;
         default: w_registerfile_wd = 0;
     endcase
     
