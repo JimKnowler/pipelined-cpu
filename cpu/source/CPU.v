@@ -94,7 +94,9 @@ assign o_pc = r_pc;
 // STAGE 2 - Decode
 
 wire [7:0] w_decoder_opcode;
+wire w_decoder_re1;
 wire [3:0] w_decoder_rs1;
+wire w_decoder_re2;
 wire [3:0] w_decoder_rs2;
 wire [3:0] w_decoder_ws;
 wire w_decoder_we;
@@ -113,7 +115,9 @@ Decoder decoder(
 
     .i_ir(r_ir),
     .o_opcode(w_decoder_opcode),
+    .o_re1(w_decoder_re1),
     .o_rs1(w_decoder_rs1),
+    .o_re2(w_decoder_re2),
     .o_rs2(w_decoder_rs2),
     .o_ws(w_decoder_ws),
     .o_we(w_decoder_we),
@@ -139,7 +143,9 @@ StallControl stallControl(
     .i_clk(i_clk),
     .i_reset_n(i_reset_n),
 
+    .i_decoder_re1(w_decoder_re1),
     .i_decoder_rs1(w_decoder_rs1),
+    .i_decoder_re2(w_decoder_re2),
     .i_decoder_rs2(w_decoder_rs2),
 
     .i_execute_ws(r_execute_ws),

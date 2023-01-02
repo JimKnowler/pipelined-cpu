@@ -42,7 +42,9 @@ TEST_F(Decoder, ShouldDecodeNOP) {
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::NOP), core.o_opcode);
+    EXPECT_EQ(0, core.o_re1);
     EXPECT_EQ(0, core.o_rs1);
+    EXPECT_EQ(0, core.o_re2);
     EXPECT_EQ(0, core.o_rs2);
     EXPECT_EQ(0, core.o_ws);
     EXPECT_EQ(0, core.o_we);
@@ -59,7 +61,9 @@ TEST_F(Decoder, ShouldDecodeLDA) {
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::LDA), core.o_opcode);
+    EXPECT_EQ(0, core.o_re1);
     EXPECT_EQ(0, core.o_rs1);
+    EXPECT_EQ(0, core.o_re1);
     EXPECT_EQ(0, core.o_rs2);
     EXPECT_EQ(TestRegister, core.o_ws);
     EXPECT_EQ(1, core.o_we);
@@ -76,7 +80,9 @@ TEST_F(Decoder, ShouldDecodeSTA) {
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::STA), core.o_opcode);
+    EXPECT_EQ(1, core.o_re1);
     EXPECT_EQ(TestRegister, core.o_rs1);
+    EXPECT_EQ(0, core.o_re2);
     EXPECT_EQ(0, core.o_rs2);
     EXPECT_EQ(0, core.o_ws);
     EXPECT_EQ(0, core.o_we);
@@ -94,7 +100,9 @@ TEST_F(Decoder, ShouldDecodeADD) {
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::ADD), core.o_opcode);
+    EXPECT_EQ(1, core.o_re1);
     EXPECT_EQ(TestRs1, core.o_rs1);
+    EXPECT_EQ(1, core.o_re2);
     EXPECT_EQ(TestRs2, core.o_rs2);
     EXPECT_EQ(TestWs, core.o_ws);
     EXPECT_EQ(1, core.o_we);
@@ -112,7 +120,9 @@ TEST_F(Decoder, ShouldDecodeSUB) {
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::SUB), core.o_opcode);
+    EXPECT_EQ(1, core.o_re1);
     EXPECT_EQ(TestRs1, core.o_rs1);
+    EXPECT_EQ(1, core.o_re2);
     EXPECT_EQ(TestRs2, core.o_rs2);
     EXPECT_EQ(TestWs, core.o_ws);
     EXPECT_EQ(1, core.o_we);

@@ -32,6 +32,27 @@ TEST_F(StallControl, ShouldNotStallWhenLaterStagesHaveWriteDisabled) {
     //       to register 0
     // note: all write enables are set by default to 0
 
+    core.i_decoder_re1 = 1;
+    core.i_decoder_re2 = 1;
+
+    core.eval();
+
+    EXPECT_EQ(0, core.o_stall);
+}
+
+TEST_F(StallControl, ShouldNotStallWhenLaterStagesHaveWriteEnabledButDecoderHasReadDisabled) {
+    auto& core = testBench.core();
+
+    // note: all read are write register selectors are set by default
+    //       to register 0
+
+    core.i_decoder_re1 = 0;
+    core.i_decoder_re2 = 0;
+
+    core.i_execute_we = 1;
+    core.i_memory_we = 1;
+    core.i_writeback_we = 1;
+
     core.eval();
 
     EXPECT_EQ(0, core.o_stall);
@@ -43,7 +64,9 @@ TEST_F(StallControl, ShouldStallWhenRs1WrittenByExecuteStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_re2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_execute_ws = kTestRs1;
@@ -60,7 +83,9 @@ TEST_F(StallControl, ShouldStallWhenRs2WrittenByExecuteStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_re2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_execute_ws = kTestRs2;
@@ -77,7 +102,9 @@ TEST_F(StallControl, ShouldStallWhenRs1WrittenByMemoryStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_rs2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_memory_ws = kTestRs1;
@@ -94,7 +121,9 @@ TEST_F(StallControl, ShouldStallWhenRs2WrittenByMemoryStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_re2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_memory_ws = kTestRs2;
@@ -112,7 +141,9 @@ TEST_F(StallControl, ShouldStallWhenRs1WrittenByWritebackStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_re2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_writeback_ws = kTestRs1;
@@ -129,7 +160,9 @@ TEST_F(StallControl, ShouldStallWhenRs2WrittenByWritebackStage) {
     const uint8_t kTestRs1 = 12;
     const uint8_t kTestRs2 = 13;
 
+    core.i_decoder_re1 = 1;
     core.i_decoder_rs1 = kTestRs1;
+    core.i_decoder_re2 = 1;
     core.i_decoder_rs2 = kTestRs2;
 
     core.i_writeback_ws = kTestRs2;

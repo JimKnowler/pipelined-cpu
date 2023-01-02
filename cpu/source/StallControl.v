@@ -7,7 +7,9 @@ module StallControl(
 /* verilator lint_off UNUSED */
 
     // decode stage
+    input i_decoder_re1,            // read enabled for read register 1
     input [3:0] i_decoder_rs1,      // read register selector 1
+    input i_decoder_re2,            // read enable for read register 2
     input [3:0] i_decoder_rs2,      // read register selector 2
 
     // execute stage
@@ -33,9 +35,20 @@ reg r_stall;
 
 always @(*)
 begin
-    r_stall = (((i_decoder_rs1 == i_execute_ws) || (i_decoder_rs2 == i_execute_ws)) && i_execute_we)
-              || (((i_decoder_rs1 == i_memory_ws) || (i_decoder_rs2 == i_memory_ws)) && i_memory_we)
-              || (((i_decoder_rs1 == i_writeback_ws) || (i_decoder_rs2 == i_writeback_ws)) && i_writeback_we);
+    r_stall = (
+                (
+                    ((i_decoder_rs1 == i_execute_ws) && i_execute_we) ||
+                    ((i_decoder_rs1 == i_memory_ws) && i_memory_we) ||
+                    ((i_decoder_rs1 == i_writeback_ws) && i_writeback_we )
+                ) && i_decoder_re1
+              ) || 
+              (
+                (
+                    ((i_decoder_rs2 == i_execute_ws) && i_execute_we) ||
+                    ((i_decoder_rs2 == i_memory_ws) && i_memory_we) ||
+                    ((i_decoder_rs2 == i_writeback_ws) && i_writeback_we )
+                ) && i_decoder_re2
+              );
 end
 
 assign o_stall = r_stall;
