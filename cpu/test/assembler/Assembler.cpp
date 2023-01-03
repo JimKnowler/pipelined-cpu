@@ -1,7 +1,8 @@
 #include "Assembler.h"
 
-#include "opcode/OpcodeTypeI.h"
-#include "opcode/OpcodeTypeR.h"
+#include "opcode/OpcodeTypeALU.h"
+#include "opcode/OpcodeTypeLoad.h"
+#include "opcode/OpcodeTypeStore.h"
 
 namespace assembler {
     Assembler::Assembler() {
@@ -119,17 +120,23 @@ namespace assembler {
         FinishCurrentOpcode();
 
         switch (Opcode) {
-            case Opcode::NOP:
+            
             case Opcode::LW:
-            case Opcode::SW:
             {
-                auto NewOpcode = std::make_unique<opcode::OpcodeTypeI>(Opcode);
+                auto NewOpcode = std::make_unique<opcode::OpcodeTypeLoad>(Opcode);
                 CurrentOpcode = std::move(NewOpcode);
                 break;
             }
+            case Opcode::SW:
+            {
+                auto NewOpcode = std::make_unique<opcode::OpcodeTypeStore>(Opcode);
+                CurrentOpcode = std::move(NewOpcode);
+                break;
+            }
+            case Opcode::NOP:
             case Opcode::ADD:
             case Opcode::SUB:
-                CurrentOpcode = std::make_unique<opcode::OpcodeTypeR>(Opcode);
+                CurrentOpcode = std::make_unique<opcode::OpcodeTypeALU>(Opcode);
                 break;
             default:
                 throw std::runtime_error("Assembler: unknown opcode type");

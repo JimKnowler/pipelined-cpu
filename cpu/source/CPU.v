@@ -21,6 +21,8 @@ module CPU(
 
     // debugging - stage 3
     output [3:0] o_debug_alu_op,
+    output [31:0] o_debug_alu_rd1,
+    output [31:0] o_debug_alu_rd2,
     output [31:0] o_debug_alu_result,
     output [7:0] o_debug_memory_opcode,
 
@@ -58,13 +60,13 @@ reg [3:0] r_execute_ws;
 reg r_execute_we;
 reg [31:0] r_execute_rd1;
 reg [31:0] r_execute_rd2;
-reg [15:0] r_execute_immediate;
+reg [31:0] r_execute_write_data;
 
 reg [7:0] r_memory_opcode;
 reg [3:0] r_memory_ws;
 reg r_memory_we;
-reg [15:0] r_memory_immediate;
 reg [31:0] r_memory_alu_result;
+reg [31:0] r_memory_write_data;
 
 reg [7:0] r_writeback_opcode;
 reg [3:0] r_writeback_ws;
@@ -100,7 +102,8 @@ wire w_decoder_re2;
 wire [3:0] w_decoder_rs2;
 wire [3:0] w_decoder_ws;
 wire w_decoder_we;
-wire [15:0] w_decoder_immediate;
+wire w_decoder_ie;
+wire [15:0] w_decoder_id;
 
 reg w_registerfile_we;             // write enable
 reg [3:0] w_registerfile_ws;       // write register select
@@ -121,7 +124,8 @@ Decoder decoder(
     .o_rs2(w_decoder_rs2),
     .o_ws(w_decoder_ws),
     .o_we(w_decoder_we),
-    .o_i(w_decoder_immediate)
+    .o_ie(w_decoder_ie),
+    .o_id(w_decoder_id)
 );
 
 RegisterFile registerFile(
@@ -168,8 +172,11 @@ begin
         r_execute_ws <= w_decoder_ws;
         r_execute_we <= w_decoder_we;
         r_execute_rd1 <= w_registerfile_rd1;
-        r_execute_rd2 <= w_registerfile_rd2;
-        r_execute_immediate <= w_decoder_immediate;
+        if (w_decoder_ie)
+            r_execute_rd2 <= { 16'b0, w_decoder_id };
+        else
+            r_execute_rd2 <= w_registerfile_rd2;
+        r_execute_write_data <= w_registerfile_rd2;
     end
     else
     begin
@@ -178,7 +185,7 @@ begin
         r_execute_we <= 0;
         r_execute_rd1 <= 0;
         r_execute_rd2 <= 0;
-        r_execute_immediate <= 0;
+        r_execute_write_data <= 0;
     end
 end
 
@@ -208,7 +215,7 @@ always @(*)
 begin
     // TODO: move ALU op decode to the decoder and pass along pipeline
     case (r_execute_opcode)
-        ADD: r_alu_op = OP_ADD;
+        ADD, LW, SW: r_alu_op = OP_ADD;
         SUB: r_alu_op = OP_SUB;
         default: r_alu_op = OP_PASSTHROUGH;
     endcase
@@ -222,7 +229,7 @@ begin
     r_memory_opcode <= r_execute_opcode;
     r_memory_ws <= r_execute_ws;
     r_memory_we <= r_execute_we;
-    r_memory_immediate <= r_execute_immediate;
+    r_memory_write_data <= r_execute_write_data;
     r_memory_alu_result <= w_alu_result;
 end
 
@@ -238,7 +245,7 @@ begin
     case (r_memory_opcode)
         SW: begin
             r_rw = RW_WRITE;
-            r_data = r_memory_alu_result;
+            r_data = r_memory_write_data;
         end
         default: begin
             r_rw = RW_READ;
@@ -246,7 +253,8 @@ begin
         end
     endcase
 
-    r_address = r_memory_immediate;
+    // TODO: expand memory bus (and simulation) to 32 bits?
+    r_address = r_memory_alu_result[15:0];
 end
 
 always @(posedge i_clk)
@@ -299,6 +307,8 @@ assign o_debug_registerfile_rd2 = w_registerfile_rd2;
 assign o_debug_execute_opcode = r_execute_opcode;
 
 assign o_debug_alu_op = r_alu_op;
+assign o_debug_alu_rd1 = r_alu_d1;
+assign o_debug_alu_rd2 = r_alu_d2;
 assign o_debug_alu_result = w_alu_result;
 assign o_debug_memory_opcode = r_memory_opcode;
 

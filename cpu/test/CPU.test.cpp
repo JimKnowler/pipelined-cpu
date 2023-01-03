@@ -95,12 +95,12 @@ TEST_F(CPU, ShouldLoadAndStoreWithoutPipelineHazards) {
 
     assembler::Assembler assembler;
     assembler
-        .LW().r(kTestReg).i(kTestAddressSrc)
+        .LW().rd(kTestReg).i(kTestAddressSrc)
         .NOP()
         .NOP()
         .NOP()
         .NOP()
-        .SW().r(kTestReg).i(kTestAddressDst)
+        .SW().rs2(kTestReg).i(kTestAddressDst)
         .NOP()
         .NOP()
         .NOP()
@@ -132,8 +132,8 @@ TEST_F(CPU, ShouldAddWithoutPipelineHazards) {
 
     assembler::Assembler assembler;
     assembler
-        .LW().r(kTestReg1).i(kTestAddressSrc1)
-        .LW().r(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
         .NOP()
         .NOP()
         .NOP()
@@ -143,7 +143,7 @@ TEST_F(CPU, ShouldAddWithoutPipelineHazards) {
         .NOP()
         .NOP()
         .NOP()
-        .SW().r(kTestRegDst).i(kTestAddressDst)
+        .SW().rs2(kTestRegDst).i(kTestAddressDst)
         .NOP()
         .NOP()
         .NOP()
@@ -175,8 +175,8 @@ TEST_F(CPU, ShouldSubWithoutPipelineHazards) {
 
     assembler::Assembler assembler;
     assembler
-        .LW().r(kTestReg1).i(kTestAddressSrc1)
-        .LW().r(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
         .NOP()
         .NOP()
         .NOP()
@@ -186,7 +186,7 @@ TEST_F(CPU, ShouldSubWithoutPipelineHazards) {
         .NOP()
         .NOP()
         .NOP()
-        .SW().r(kTestRegDst).i(kTestAddressDst)
+        .SW().rs2(kTestRegDst).i(kTestAddressDst)
         .NOP()
         .NOP()
         .NOP()
@@ -218,10 +218,10 @@ TEST_F(CPU, ShouldAddWithPipelineRegisterHazards) {
 
     assembler::Assembler assembler;
     assembler
-        .LW().r(kTestReg1).i(kTestAddressSrc1)
-        .LW().r(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
         .ADD().rd(kTestRegDst).rs1(kTestReg1).rs2(kTestReg2)
-        .SW().r(kTestRegDst).i(kTestAddressDst)
+        .SW().rs2(kTestRegDst).i(kTestAddressDst)
         .NOP()
         .NOP()
         .NOP()
@@ -230,8 +230,6 @@ TEST_F(CPU, ShouldAddWithPipelineRegisterHazards) {
     assembler.Assemble(instructionMemory);
 
     testBench.tick(16);
-
-    std::cout << testBench.trace;
 
     EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
 }

@@ -48,16 +48,26 @@ An experiment in building a simple pipelined CPU in verilog
         - 00000002 = SW: mem[Rs1 + immediate] = Rs2
         - 00000003 = ADD: Rd = Rs1 + Rs2
         - 00000004 = SUB: Rd = Rs1 - Rs2
-  - Type I: LW
+  - Type LOAD: LW
     - [23 ... 20] = destination register *(4 bits)*
     - [19 ... 4] = immediate value *(16 bits)*
     - [3 ... 0] = source register 1 *(4 bits)*
-  - Type I: SW
-    - [23 ... 20] = source register 2 *(4 bits)*
-    - [19 ... 4] = immediate value *(16 bits)*
-    - [3 ... 0] = source register 1 *(4 bits)*
-  - Type R: ADD, SUB
+  - Type STORE: SW
+    - [23 ... 8] = immediate value *(16 bits)*
+    - [7 ... 4] = source register 1 *(4 bits)*
+    - [3 ... 0] = source register 2 *(4 bits)*
+  - Type ALU: ADD, SUB
     - [23 ... 20] = destination register *(4 bits)*
     - [19 ... 8] = 0000 0000 0000 *(12 bits)*
     - [7 ... 4] = source register 1 *(4 bits)*
     - [3 ... 0] = source register 2 *(4 bits)*
+
+# TODO
+
+- expand memory bus to 32 bits
+- add data hazard on reading / writing same address in memory
+- add branch
+- add conditional branch
+- add control hazards for branch (branch delay slot?)
+- simplify assembler (remove 'r' field, add pseudonames for rs1/rs2 that are helpful for load/store instructions?)
+- treat r0 as const 0?

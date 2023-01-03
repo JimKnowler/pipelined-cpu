@@ -46,34 +46,38 @@ TEST_F(Decoder, ShouldDecodeNOP) {
     EXPECT_EQ(0, core.o_rs1);
     EXPECT_EQ(0, core.o_re2);
     EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(0, core.o_ws);
     EXPECT_EQ(0, core.o_we);
-    EXPECT_EQ(0, core.o_i);
+    EXPECT_EQ(0, core.o_ws);
+    EXPECT_EQ(0, core.o_ie);
+    EXPECT_EQ(0, core.o_id);
 }
 
-TEST_F(Decoder, ShouldDecodeLDA) {
-    const uint8_t TestRegister = 12;
+TEST_F(Decoder, ShouldDecodeLW) {
+    const uint8_t TestRegisterSrc = 15;
+    const uint8_t TestRegisterDest = 12;
     const uint16_t TestAddress = 0xabcd;
-    const uint32_t LW= Assembler().LW().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
+    const uint32_t LW = Assembler().LW().rd(TestRegisterDest).rs1(TestRegisterSrc).i(TestAddress).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
     core.i_ir = LW;
     core.eval();
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::LW), core.o_opcode);
-    EXPECT_EQ(0, core.o_re1);
-    EXPECT_EQ(0, core.o_rs1);
-    EXPECT_EQ(0, core.o_re1);
+    EXPECT_EQ(1, core.o_re1);
+    EXPECT_EQ(TestRegisterSrc, core.o_rs1);
+    EXPECT_EQ(0, core.o_re2);
     EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(TestRegister, core.o_ws);
     EXPECT_EQ(1, core.o_we);
-    EXPECT_EQ(TestAddress, core.o_i);
+    EXPECT_EQ(TestRegisterDest, core.o_ws);
+    EXPECT_EQ(1, core.o_ie);
+    EXPECT_EQ(TestAddress, core.o_id);
 }
 
-TEST_F(Decoder, ShouldDecodeSTA) {
-    const uint8_t TestRegister = 14;
+TEST_F(Decoder, ShouldDecodeSW) {
+    const uint8_t TestRegisterSrc1 = 14;
+    const uint8_t TestRegisterSrc2 = 12;
     const uint16_t TestAddress = 0xcdef;
-    const uint32_t SW = Assembler().SW().r(TestRegister).i(TestAddress).AssembleCurrentOpcode();
+    const uint32_t SW = Assembler().SW().rs1(TestRegisterSrc1).rs2(TestRegisterSrc2).i(TestAddress).AssembleCurrentOpcode();
 
     auto& core = testBench.core();
     core.i_ir = SW;
@@ -81,12 +85,13 @@ TEST_F(Decoder, ShouldDecodeSTA) {
 
     EXPECT_EQ(static_cast<uint8_t>(Opcode::SW), core.o_opcode);
     EXPECT_EQ(1, core.o_re1);
-    EXPECT_EQ(TestRegister, core.o_rs1);
-    EXPECT_EQ(0, core.o_re2);
-    EXPECT_EQ(0, core.o_rs2);
-    EXPECT_EQ(0, core.o_ws);
+    EXPECT_EQ(TestRegisterSrc1, core.o_rs1);
+    EXPECT_EQ(1, core.o_re2);
+    EXPECT_EQ(TestRegisterSrc2, core.o_rs2);
     EXPECT_EQ(0, core.o_we);
-    EXPECT_EQ(TestAddress, core.o_i);
+    EXPECT_EQ(0, core.o_ws);
+    EXPECT_EQ(1, core.o_ie);
+    EXPECT_EQ(TestAddress, core.o_id);
 }
 
 TEST_F(Decoder, ShouldDecodeADD) {
@@ -104,9 +109,10 @@ TEST_F(Decoder, ShouldDecodeADD) {
     EXPECT_EQ(TestRs1, core.o_rs1);
     EXPECT_EQ(1, core.o_re2);
     EXPECT_EQ(TestRs2, core.o_rs2);
-    EXPECT_EQ(TestWs, core.o_ws);
     EXPECT_EQ(1, core.o_we);
-    EXPECT_EQ(0, core.o_i);
+    EXPECT_EQ(TestWs, core.o_ws);
+    EXPECT_EQ(0, core.o_ie);
+    EXPECT_EQ(0, core.o_id);
 }
 
 TEST_F(Decoder, ShouldDecodeSUB) {
@@ -124,7 +130,8 @@ TEST_F(Decoder, ShouldDecodeSUB) {
     EXPECT_EQ(TestRs1, core.o_rs1);
     EXPECT_EQ(1, core.o_re2);
     EXPECT_EQ(TestRs2, core.o_rs2);
-    EXPECT_EQ(TestWs, core.o_ws);
     EXPECT_EQ(1, core.o_we);
-    EXPECT_EQ(0, core.o_i);
+    EXPECT_EQ(TestWs, core.o_ws);
+    EXPECT_EQ(0, core.o_ie);
+    EXPECT_EQ(0, core.o_id);
 }

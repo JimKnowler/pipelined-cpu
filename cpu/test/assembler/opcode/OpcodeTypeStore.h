@@ -4,9 +4,9 @@
 
 namespace assembler {
     namespace opcode {
-        class OpcodeTypeR : public IOpcode {
+        class OpcodeTypeStore : public IOpcode {
         public:
-            OpcodeTypeR(Opcode Opcode) : IOpcode(Opcode) {}
+            OpcodeTypeStore(Opcode Opcode) : IOpcode(Opcode) {}
 
         public: // IOpcode
             virtual uint32_t Assemble() const override;
