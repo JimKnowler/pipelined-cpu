@@ -20,8 +20,18 @@ reg [31:0] r_rd2;
 
 always @(*)
 begin
-   r_rd1 = r_registers[i_rs1];
-   r_rd2 = r_registers[i_rs2]; 
+    r_rd1 = r_registers[i_rs1];
+    r_rd2 = r_registers[i_rs2]; 
+
+    // bypass from write to read
+    if (i_we)
+    begin
+        if (i_ws == i_rs1)
+            r_rd1 = i_wd;
+
+        if (i_ws == i_rs2)
+            r_rd2 = i_wd;
+    end
 end
 
 integer i;
