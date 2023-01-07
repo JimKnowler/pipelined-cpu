@@ -26,14 +26,17 @@ Based on the pipeline CPU design that is described in week 1 of this [Computer A
 - 16 general purpose registers
 
 - 5 stage pipeline
-  - fetch
-  - decode
-  - execute
-  - memory
-  - write to register file
+  - Fetch
+  - Decode
+  - Execute
+  - Memory
+  - Writeback (to register file)
 
-- Separate memory bus for instructions and data
-  - benefit: removes structural hazard for memory access
+- automated pipeline stall
+  - automatically stall the pipeline when Decode stage needs to read from a register that the Execute, Memory or Writeback stages could write to
+
+- Independent memory bus for instructions and data
+  - benefit: removes structural hazard for memory access, to simplify this first attempt at pipelining
   - 16bit data addresses
   - 16bit instruction addresses
 
@@ -67,10 +70,9 @@ Based on the pipeline CPU design that is described in week 1 of this [Computer A
 
 # TODO
 
+- add forwarding/bypassing from Execute, Memory and Writeback stages to Decoder, to avoid stalling 
 - expand memory bus to 32 bits
-- add data hazard on reading / writing same address in memory
 - add branch
 - add conditional branch
 - add control hazards for branch (branch delay slot?)
-- simplify assembler (remove 'r' field, add pseudonames for rs1/rs2 that are helpful for load/store instructions?)
 - treat r0 as const 0?
