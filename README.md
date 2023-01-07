@@ -1,6 +1,9 @@
 # Pipelined CPU
 
-An experiment in building a simple pipelined CPU in verilog
+An experiment in building a simple pipelined CPU in verilog.
+
+Based on the pipeline CPU design that is described in week 1 of this [Computer Architecture course on Coursera](https://www.coursera.org/learn/comparch/home/week/1).
+- The [Lecture Notes](https://d396qusza40orc.cloudfront.net/comparch%2Fcomparch-002%2Flecture_slides%2FSD2_XAek1vrBgk.pdf) contain diagrams for the pipelined CPU design
 
 # Dependencies
 
