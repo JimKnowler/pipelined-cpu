@@ -21,8 +21,8 @@ module CPU(
 
     // debugging - stage 3
     output [3:0] o_debug_alu_op,
-    output [31:0] o_debug_alu_rd1,
-    output [31:0] o_debug_alu_rd2,
+    output [31:0] o_debug_alu_a,
+    output [31:0] o_debug_alu_b,
     output [31:0] o_debug_alu_y,
     output [7:0] o_debug_memory_opcode,
 
@@ -155,10 +155,32 @@ StallControl stallControl(
     .i_execute_ws(r_execute_ws),
     .i_execute_we(r_execute_we),
 
-    .i_memory_ws(r_memory_ws),
-    .i_memory_we(r_memory_we),
-
     .o_stall(w_stall)
+);
+
+reg [31:0] r_muxed_decoder_rd1;
+reg [31:0] r_muxed_decoder_rd2;
+
+DecoderReadRegisterMux decoderReadRegisterMuxRD1(
+    .i_rs(w_decoder_rs1),
+    .i_rd(w_registerfile_rd1),
+
+    .i_memory_opcode(r_memory_opcode),
+    .i_memory_ws(r_memory_ws),
+    .i_memory_data(i_data),
+
+    .o_rd(r_muxed_decoder_rd1)
+);
+
+DecoderReadRegisterMux decoderReadRegisterMuxRD2(
+    .i_rs(w_decoder_rs2),
+    .i_rd(w_registerfile_rd2),
+
+    .i_memory_opcode(r_memory_opcode),
+    .i_memory_ws(r_memory_ws),
+    .i_memory_data(i_data),
+
+    .o_rd(r_muxed_decoder_rd2)
 );
 
 always @(posedge i_clk)
@@ -168,12 +190,12 @@ begin
         r_execute_opcode <= w_decoder_opcode;
         r_execute_ws <= w_decoder_ws;
         r_execute_we <= w_decoder_we;
-        r_execute_rd1 <= w_registerfile_rd1;
+        r_execute_rd1 <= r_muxed_decoder_rd1;
         if (w_decoder_ie)
             r_execute_rd2 <= { 16'b0, w_decoder_id };
         else
-            r_execute_rd2 <= w_registerfile_rd2;
-        r_execute_write_data <= w_registerfile_rd2;
+            r_execute_rd2 <= r_muxed_decoder_rd2;
+        r_execute_write_data <= r_muxed_decoder_rd2;
     end
     else
     begin
@@ -302,8 +324,8 @@ assign o_debug_registerfile_rd2 = w_registerfile_rd2;
 assign o_debug_execute_opcode = r_execute_opcode;
 
 assign o_debug_alu_op = r_alu_op;
-assign o_debug_alu_rd1 = r_alu_a;
-assign o_debug_alu_rd2 = r_alu_b;
+assign o_debug_alu_a = r_alu_a;
+assign o_debug_alu_b = r_alu_b;
 assign o_debug_alu_y = w_alu_y;
 assign o_debug_memory_opcode = r_memory_opcode;
 

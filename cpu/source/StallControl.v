@@ -14,10 +14,6 @@ module StallControl(
     input [3:0] i_execute_ws,       // write register selector
     input i_execute_we,             // write enable
 
-    // memory stage
-    input [3:0] i_memory_ws,        // write register selector
-    input i_memory_we,              // write enable
-
     output o_stall
 
 );
@@ -28,14 +24,12 @@ always @(*)
 begin
     r_stall = (
                 (
-                    ((i_decoder_rs1 == i_execute_ws) && i_execute_we) ||
-                    ((i_decoder_rs1 == i_memory_ws) && i_memory_we)
+                    ((i_decoder_rs1 == i_execute_ws) && i_execute_we) 
                 ) && i_decoder_re1
               ) || 
               (
                 (
-                    ((i_decoder_rs2 == i_execute_ws) && i_execute_we) ||
-                    ((i_decoder_rs2 == i_memory_ws) && i_memory_we)
+                    ((i_decoder_rs2 == i_execute_ws) && i_execute_we)
                 ) && i_decoder_re2
               );
 end
