@@ -23,7 +23,7 @@ module CPU(
     output [3:0] o_debug_alu_op,
     output [31:0] o_debug_alu_rd1,
     output [31:0] o_debug_alu_rd2,
-    output [31:0] o_debug_alu_result,
+    output [31:0] o_debug_alu_y,
     output [7:0] o_debug_memory_opcode,
 
     // debugging - stage 4
@@ -65,13 +65,13 @@ reg [31:0] r_execute_write_data;
 reg [7:0] r_memory_opcode;
 reg [3:0] r_memory_ws;
 reg r_memory_we;
-reg [31:0] r_memory_alu_result;
+reg [31:0] r_memory_alu_y;
 reg [31:0] r_memory_write_data;
 
 reg [7:0] r_writeback_opcode;
 reg [3:0] r_writeback_ws;
 reg r_writeback_we;
-reg [31:0] r_writeback_alu_result;
+reg [31:0] r_writeback_alu_y;
 reg [31:0] r_writeback_data;
 
 // ----------------------------------------------------------
@@ -193,17 +193,17 @@ end
 // STAGE 3 - Execute
 
 reg [3:0] r_alu_op;
-reg [31:0] r_alu_d1;
-reg [31:0] r_alu_d2;
-wire [31:0] w_alu_result;
+reg [31:0] r_alu_a;
+reg [31:0] r_alu_b;
+wire [31:0] w_alu_y;
 
 ALU alu(
     .i_clk(i_clk),
     .i_reset_n(i_reset_n),
     .i_op(r_alu_op),
-    .i_d1(r_alu_d1),
-    .i_d2(r_alu_d2),
-    .o_result(w_alu_result)
+    .i_d1(r_alu_a),
+    .i_d2(r_alu_b),
+    .o_result(w_alu_y)
 );
 
 // TODO: define once and share between CPU.v and ALU.v
@@ -213,15 +213,14 @@ localparam [3:0] OP_SUB = 2;
 
 always @(*)
 begin
-    // TODO: move ALU op decode to the decoder and pass along pipeline
     case (r_execute_opcode)
         ADD, LW, SW: r_alu_op = OP_ADD;
         SUB: r_alu_op = OP_SUB;
         default: r_alu_op = OP_PASSTHROUGH;
     endcase
 
-    r_alu_d1 = r_execute_rd1;
-    r_alu_d2 = r_execute_rd2;
+    r_alu_a = r_execute_rd1;
+    r_alu_b = r_execute_rd2;
 end
 
 always @(posedge i_clk)
@@ -230,7 +229,7 @@ begin
     r_memory_ws <= r_execute_ws;
     r_memory_we <= r_execute_we;
     r_memory_write_data <= r_execute_write_data;
-    r_memory_alu_result <= w_alu_result;
+    r_memory_alu_y <= w_alu_y;
 end
 
 // ----------------------------------------------------------
@@ -254,7 +253,7 @@ begin
     endcase
 
     // TODO: expand memory bus (and simulation) to 32 bits?
-    r_address = r_memory_alu_result[15:0];
+    r_address = r_memory_alu_y[15:0];
 end
 
 always @(posedge i_clk)
@@ -262,7 +261,7 @@ begin
     r_writeback_opcode <= r_memory_opcode;
     r_writeback_ws <= r_memory_ws;
     r_writeback_we <= r_memory_we;
-    r_writeback_alu_result <= r_memory_alu_result;
+    r_writeback_alu_y <= r_memory_alu_y;
     r_writeback_data <= i_data;
 end
 
@@ -274,9 +273,8 @@ begin
     w_registerfile_we = r_writeback_we;
     w_registerfile_ws = r_writeback_ws;
 
-    // TODO: move writeback selection to decoder and pass along pipeline
     case (r_writeback_opcode)
-        ADD, SUB: w_registerfile_wd = r_writeback_alu_result;
+        ADD, SUB: w_registerfile_wd = r_writeback_alu_y;
         LW: w_registerfile_wd = r_writeback_data;
         default: w_registerfile_wd = 0;
     endcase
@@ -307,9 +305,9 @@ assign o_debug_registerfile_rd2 = w_registerfile_rd2;
 assign o_debug_execute_opcode = r_execute_opcode;
 
 assign o_debug_alu_op = r_alu_op;
-assign o_debug_alu_rd1 = r_alu_d1;
-assign o_debug_alu_rd2 = r_alu_d2;
-assign o_debug_alu_result = w_alu_result;
+assign o_debug_alu_rd1 = r_alu_a;
+assign o_debug_alu_rd2 = r_alu_b;
+assign o_debug_alu_y = w_alu_y;
 assign o_debug_memory_opcode = r_memory_opcode;
 
 assign o_debug_writeback_opcode = r_writeback_opcode;
