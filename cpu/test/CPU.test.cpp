@@ -234,4 +234,28 @@ TEST_F(CPU, ShouldAddWithPipelineRegisterHazards) {
     EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
 }
 
-// data hazard - write and read from the same area of memory
+TEST_F(CPU, ShouldBypassFromWritebackToDecoder) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+
+    assembler::Assembler assembler;
+    assembler
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .SW().rs2(kTestReg1).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(6);
+
+    EXPECT_EQ(kTestData1, dataMemory.read32(kTestAddressDst));
+}

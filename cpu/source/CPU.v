@@ -158,9 +158,6 @@ StallControl stallControl(
     .i_memory_ws(r_memory_ws),
     .i_memory_we(r_memory_we),
 
-    .i_writeback_ws(r_writeback_ws),
-    .i_writeback_we(r_writeback_we),
-
     .o_stall(w_stall)
 );
 
