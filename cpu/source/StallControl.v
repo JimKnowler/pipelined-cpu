@@ -12,25 +12,33 @@ module StallControl(
 
     // execute stage
     input [3:0] i_execute_ws,       // write register selector
-    input i_execute_we,             // write enable
+    input [7:0] i_execute_opcode,
 
     output o_stall
 
 );
+
+// TODO: define in one file and import into Decoder.v and CPU.v
+localparam [7:0] //NOP = 0,
+                 LW = 1;
+                 //SW = 2,
+                 //ADD = 3,
+                 //SUB = 4;
+
 
 reg r_stall;
 
 always @(*)
 begin
     r_stall = (
-                (
-                    ((i_decoder_rs1 == i_execute_ws) && i_execute_we) 
-                ) && i_decoder_re1
+                (i_decoder_rs1 == i_execute_ws)
+                && (i_execute_opcode == LW)
+                && i_decoder_re1
               ) || 
               (
-                (
-                    ((i_decoder_rs2 == i_execute_ws) && i_execute_we)
-                ) && i_decoder_re2
+                (i_decoder_rs2 == i_execute_ws)
+                && (i_execute_opcode == LW)
+                && i_decoder_re2
               );
 end
 

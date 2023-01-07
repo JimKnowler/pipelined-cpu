@@ -153,7 +153,7 @@ StallControl stallControl(
     .i_decoder_rs2(w_decoder_rs2),
 
     .i_execute_ws(r_execute_ws),
-    .i_execute_we(r_execute_we),
+    .i_execute_opcode(r_execute_opcode),
 
     .o_stall(w_stall)
 );
@@ -169,6 +169,10 @@ DecoderReadRegisterMux decoderReadRegisterMuxRD1(
     .i_memory_ws(r_memory_ws),
     .i_memory_data(i_data),
 
+    .i_execute_opcode(r_execute_opcode),
+    .i_execute_ws(r_execute_ws),
+    .i_execute_data(w_alu_y),
+
     .o_rd(r_muxed_decoder_rd1)
 );
 
@@ -179,6 +183,10 @@ DecoderReadRegisterMux decoderReadRegisterMuxRD2(
     .i_memory_opcode(r_memory_opcode),
     .i_memory_ws(r_memory_ws),
     .i_memory_data(i_data),
+
+    .i_execute_opcode(r_execute_opcode),
+    .i_execute_ws(r_execute_ws),
+    .i_execute_data(w_alu_y),
 
     .o_rd(r_muxed_decoder_rd2)
 );

@@ -295,3 +295,139 @@ TEST_F(CPU, ShouldBypassFromMemoryToDecoderRs1) {
 
     EXPECT_EQ(kTestData1 + kTestData2, dataMemory.read32(kTestAddressDst));
 }
+
+TEST_F(CPU, ShouldBypassFromExecuteToDecodeRs1ForAdd) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2 = 8;
+    const uint16_t kTestAddressSrc2 = 0x1238;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
+
+    assembler::Assembler assembler;
+    assembler
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .ADD().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .ADD().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .SW().rs2(kTestReg1).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(8);
+
+    EXPECT_EQ(kTestData1 + kTestData2 + kTestData2, dataMemory.read32(kTestAddressDst));
+}
+
+TEST_F(CPU, ShouldBypassFromExecuteToDecodeRs1ForSub) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2 = 8;
+    const uint16_t kTestAddressSrc2 = 0x1238;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
+
+    assembler::Assembler assembler;
+    assembler
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .SUB().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .SUB().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .SW().rs2(kTestReg1).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(8);
+
+    EXPECT_EQ(kTestData1 - kTestData2 - kTestData2, dataMemory.read32(kTestAddressDst));
+}
+
+TEST_F(CPU, ShouldBypassFromExecuteToDecodeRs2ForAdd) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 0x12345678;
+
+    const uint8_t kTestReg2 = 8;
+    const uint16_t kTestAddressSrc2 = 0x1238;
+    const uint32_t kTestData2 = 0x00000001;
+
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
+
+    assembler::Assembler assembler;
+    assembler
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .ADD().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .ADD().rs1(kTestReg2).rs2(kTestReg1).rd(kTestReg1)
+        .SW().rs2(kTestReg1).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(8);
+
+    EXPECT_EQ(kTestData1 + kTestData2 + kTestData2, dataMemory.read32(kTestAddressDst));
+}
+
+TEST_F(CPU, ShouldBypassFromExecuteToDecodeRs2ForSub) {
+    HelperReset();
+
+    const uint8_t kTestReg1 = 5;
+    const uint16_t kTestAddressSrc1 = 0x1234;
+    const uint32_t kTestData1 = 10;
+
+    const uint8_t kTestReg2 = 8;
+    const uint16_t kTestAddressSrc2 = 0x1238;
+    const uint32_t kTestData2 = 2;
+
+    const uint16_t kTestAddressDst = 0xabcd;
+
+    dataMemory.write(kTestAddressSrc1, kTestData1);
+    dataMemory.write(kTestAddressSrc2, kTestData2);
+
+    assembler::Assembler assembler;
+    assembler
+        .LW().rd(kTestReg2).i(kTestAddressSrc2)
+        .LW().rd(kTestReg1).i(kTestAddressSrc1)
+        .SUB().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg2)
+        .SUB().rs1(kTestReg1).rs2(kTestReg2).rd(kTestReg1)
+        .SW().rs2(kTestReg1).i(kTestAddressDst)
+        .NOP()
+        .NOP()
+        .NOP();
+
+    assembler.Assemble(instructionMemory);
+
+    testBench.tick(8);
+
+    EXPECT_EQ(kTestData1 - (kTestData1 - kTestData2), dataMemory.read32(kTestAddressDst));
+}
