@@ -32,8 +32,11 @@ Based on the pipeline CPU design that is described in week 1 of this [Computer A
   - Memory
   - Writeback (to register file)
 
-- automated pipeline stall
-  - automatically stall the pipeline when Decode stage needs to read from a register that the Execute, Memory or Writeback stages could write to
+- pipeline stall + bypass
+  - bypass from Execute to Decoder, when Execute is executing ADD or SUB
+  - bypass from Memory to Decoder, when Memory is executing LW
+  - bypass from Writeback to Decoder
+  - stall pipeline, when Execute stage has an LW that will load from memory into a register that Decoder is waiting to read from
 
 - Independent memory bus for instructions and data
   - benefit: removes structural hazard for memory access, to simplify this first attempt at pipelining
@@ -70,7 +73,6 @@ Based on the pipeline CPU design that is described in week 1 of this [Computer A
 
 # TODO
 
-- add forwarding/bypassing from Execute, Memory and Writeback stages to Decoder, to avoid stalling 
 - expand memory bus to 32 bits
 - add branch
 - add conditional branch
